@@ -32,6 +32,55 @@ class TestConfig:
         assert data["key1"] == "value1"
         assert data["key2"] == "value2"
 
+    def test_env_override_coerces_integer(self, monkeypatch):
+        monkeypatch.setenv("AO_SERVER_PORT", "8080")
+        config = Config()
+        value = config.get("server.port")
+        assert value == 8080
+        assert isinstance(value, int)
+
+    def test_env_override_coerces_float(self, monkeypatch):
+        monkeypatch.setenv("AO_TIMEOUT_MULTIPLIER", "1.5")
+        config = Config()
+        value = config.get("timeout.multiplier")
+        assert value == 1.5
+        assert isinstance(value, float)
+
+    def test_env_override_preserves_string(self, monkeypatch):
+        monkeypatch.setenv("AO_DATABASE_HOST", "localhost")
+        config = Config()
+        value = config.get("database.host")
+        assert value == "localhost"
+        assert isinstance(value, str)
+
+    def test_env_override_coerces_negative_integer(self, monkeypatch):
+        monkeypatch.setenv("AO_RETRY_OFFSET", "-1")
+        config = Config()
+        value = config.get("retry.offset")
+        assert value == -1
+        assert isinstance(value, int)
+
+    def test_env_override_coerces_zero(self, monkeypatch):
+        monkeypatch.setenv("AO_CACHE_TTL", "0")
+        config = Config()
+        value = config.get("cache.ttl")
+        assert value == 0
+        assert isinstance(value, int)
+
+    def test_env_override_scientific_notation_as_float(self, monkeypatch):
+        monkeypatch.setenv("AO_RATE_LIMIT", "1e3")
+        config = Config()
+        value = config.get("rate.limit")
+        assert value == 1000.0
+        assert isinstance(value, float)
+
+    def test_env_override_non_numeric_with_digits(self, monkeypatch):
+        monkeypatch.setenv("AO_APP_VERSION", "2.4.1")
+        config = Config()
+        value = config.get("app.version")
+        assert value == "2.4.1"
+        assert isinstance(value, str)
+
 # 2019-02-01T18:58:35 update
 
 # 2019-07-31T13:45:15 update
